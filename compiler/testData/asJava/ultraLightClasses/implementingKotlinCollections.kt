@@ -11,10 +11,12 @@ abstract class MySet<T> : ASet<T> {
 
 }
 
-abstract class SmartSet<T> private constructor() : AbstractSet<T>() {
+abstract class SmartSet<T> private constructor() : AbstractMutableSet<T>() {
   override fun iterator(): MutableIterator<T> = unresolved
 
   override fun add(element: T): Boolean {
     return true
   }
+
+  override fun contains(element: T): Boolean = true
 }
