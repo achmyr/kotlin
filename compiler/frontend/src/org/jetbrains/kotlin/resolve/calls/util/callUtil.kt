@@ -17,8 +17,10 @@
 package org.jetbrains.kotlin.resolve.calls.callUtil
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.incremental.KotlinLookupLocation
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getTextWithLocation
@@ -279,3 +281,21 @@ fun ResolvedCall<*>.getFirstArgumentExpression(): KtExpression? =
 
 fun ResolvedCall<*>.getReceiverExpression(): KtExpression? =
     extensionReceiver.safeAs<ExpressionReceiver>()?.expression ?: dispatchReceiver.safeAs<ExpressionReceiver>()?.expression
+
+val KtExpression.isTrailingLambdaOnNewLIne
+    get(): Boolean {
+        if (this !is KtLambdaExpression)
+            return false
+
+        parent?.safeAs<KtLambdaArgument>()?.let { lambdaArgument ->
+            var prevSibling = lambdaArgument.prevSibling
+
+            while (prevSibling != null && prevSibling !is KtElement) {
+                if (prevSibling.textContains('\n'))
+                    return true
+                prevSibling = prevSibling.prevSibling
+            }
+        }
+
+        return false
+    }

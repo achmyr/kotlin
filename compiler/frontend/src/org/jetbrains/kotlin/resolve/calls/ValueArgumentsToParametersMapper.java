@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.resolve.calls.model.*;
 import org.jetbrains.kotlin.resolve.calls.tasks.TracingStrategy;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static org.jetbrains.kotlin.diagnostics.Errors.*;
 import static org.jetbrains.kotlin.diagnostics.Errors.BadNamedArgumentsTarget.*;
@@ -278,17 +279,24 @@ public class ValueArgumentsToParametersMapper {
             KtExpression possiblyLabeledFunctionLiteral = lambdaArgument.getArgumentExpression();
 
             if (parameters.isEmpty()) {
-                report(TOO_MANY_ARGUMENTS.on(possiblyLabeledFunctionLiteral, candidateCall.getCandidateDescriptor()));
+                reportTrailingLambdaOnNewLineErrorOrElse(possiblyLabeledFunctionLiteral, lambdaExpression -> {
+                    report(TOO_MANY_ARGUMENTS.on(lambdaExpression, candidateCall.getCandidateDescriptor()));
+                });
                 setStatus(ERROR);
             }
             else {
                 ValueParameterDescriptor lastParameter = CollectionsKt.last(parameters);
                 if (lastParameter.getVarargElementType() != null) {
-                    report(VARARG_OUTSIDE_PARENTHESES.on(possiblyLabeledFunctionLiteral));
+                    reportTrailingLambdaOnNewLineErrorOrElse(possiblyLabeledFunctionLiteral, lambdaExpression -> {
+                        report(VARARG_OUTSIDE_PARENTHESES.on(lambdaExpression));
+                    });
                     setStatus(ERROR);
                 }
                 else if (!usedParameters.add(lastParameter)) {
-                    report(TOO_MANY_ARGUMENTS.on(possiblyLabeledFunctionLiteral, candidateCall.getCandidateDescriptor()));
+                    reportTrailingLambdaOnNewLineErrorOrElse(possiblyLabeledFunctionLiteral, lambdaExpression -> {
+                        report(TOO_MANY_ARGUMENTS.on(lambdaExpression, candidateCall.getCandidateDescriptor()));
+                    });
+
                     setStatus(WEAK_ERROR);
                 }
                 else {
@@ -299,7 +307,18 @@ public class ValueArgumentsToParametersMapper {
             for (int i = 1; i < functionLiteralArguments.size(); i++) {
                 KtExpression argument = functionLiteralArguments.get(i).getArgumentExpression();
                 report(MANY_LAMBDA_EXPRESSION_ARGUMENTS.on(argument));
+                if (CallUtilKt.isTrailingLambdaOnNewLIne(argument)) {
+                    report(UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE.on(argument));
+                }
                 setStatus(WEAK_ERROR);
+            }
+        }
+
+        private void reportTrailingLambdaOnNewLineErrorOrElse(KtExpression lambdaExpression, Consumer<KtExpression> originalReporter) {
+            if (CallUtilKt.isTrailingLambdaOnNewLIne(lambdaExpression)) {
+                report(UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE.on(lambdaExpression));
+            } else {
+                originalReporter.accept(lambdaExpression);
             }
         }
 
