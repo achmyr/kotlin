@@ -291,7 +291,7 @@ val KtExpression.isTrailingLambdaOnNewLIne
             var prevSibling = lambdaArgument.prevSibling
 
             while (prevSibling != null && prevSibling !is KtElement) {
-                if (prevSibling.textContains('\n'))
+                if (prevSibling is PsiWhiteSpace && prevSibling.textContains('\n'))
                     return true
                 prevSibling = prevSibling.prevSibling
             }

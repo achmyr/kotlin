@@ -1,3 +1,4 @@
+// !WITH_NEW_INFERENCE
 // !DIAGNOSTICS: -UNUSED_PARAMETER
 
 fun noArgs() {}
@@ -12,9 +13,13 @@ fun testNoArgs() {
     noArgs() // {}
     noArgs() /* */ <!TOO_MANY_ARGUMENTS!>{}<!>
     noArgs() /*
-        block
-        comment
-    */ <!UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!>
+        block comment, no new line
+    */ <!TOO_MANY_ARGUMENTS!>{}<!>
+    noArgs()
+    /*
+        block comment with new line
+    */
+    <!UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!>
     noArgs() // comment
     // comment
     <!UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!>
@@ -46,9 +51,12 @@ fun testLambdaArg() {
     // comment
     {}
     oneLambdaArg() {}/*
-        block
-        comment
-    */ <!MANY_LAMBDA_EXPRESSION_ARGUMENTS, UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!>
+        block comment, no new line
+    */ <!MANY_LAMBDA_EXPRESSION_ARGUMENTS!>{}<!>
+    oneLambdaArg() {}/*
+        block comment with new line
+    */
+    <!MANY_LAMBDA_EXPRESSION_ARGUMENTS, UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!>
     oneLambdaArg() {}// comment
     // comment
     <!MANY_LAMBDA_EXPRESSION_ARGUMENTS, UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!>
@@ -66,8 +74,11 @@ fun testVararg() {
     varargFn(1,2,3) // {}
     varargFn(1,2,3) /* */ <!VARARG_OUTSIDE_PARENTHESES!>{}<!>
     varargFn(1,2,3) /*
-        block
-        comment
+        block comment, no new line
+    */ <!VARARG_OUTSIDE_PARENTHESES!>{}<!>
+    varargFn(1,2,3)
+    /*
+        block comment with new line
     */ <!UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!>
     varargFn(1,2,3) // comment
     // comment
@@ -89,12 +100,12 @@ fun testTwoLambdas() {
         {}
         <!MANY_LAMBDA_EXPRESSION_ARGUMENTS, UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!>
 
-        return if (true) {
-            <!TYPE_MISMATCH("() -> Unit", "Unit")!>twoLambdaArgs({})
+        return <!NI;TYPE_MISMATCH, NI;TYPE_MISMATCH!>if (true) {
+            <!OI;TYPE_MISMATCH!>twoLambdaArgs({})
             {}
             <!MANY_LAMBDA_EXPRESSION_ARGUMENTS, UNEXPECTED_TRAILING_LAMBDA_ON_A_NEW_LINE!>{}<!><!>
-        } else {
+        } else <!NI;TYPE_MISMATCH!>{
             {}
-        }
+        }<!><!>
     }
 }
