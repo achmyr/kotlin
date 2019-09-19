@@ -26,7 +26,7 @@ abstract class AbstractBlackBoxCodegenTestForNoArg : AbstractBlackBoxCodegenTest
         val project = myEnvironment.project
         registerExtension(project, CliNoArgComponentContainerContributor(NOARG_ANNOTATIONS))
         val invokeInitializers = files.any { "// INVOKE_INITIALIZERS" in it.content }
-        ExpressionCodegenExtension.registerExtension(project, NoArgExpressionCodegenExtension(invokeInitializers))
+        ExpressionCodegenExtension.registerExtension(project, AbstractNoArgExpressionCodegenExtension(invokeInitializers, annotations))
 
         super.loadMultiFiles(files)
     }
